@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>My Kindle 本棚</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F6F1EB;--card:#FFFDF9;--bdr:rgba(120,100,70,.1);
+  --t1:#2A1F0E;--t2:#6B5C48;--t3:#9E8F7A;
+  --accent:#B8860B;--accent-soft:rgba(184,134,11,.08);--accent-mid:rgba(184,134,11,.15);
+  --shadow:0 1px 4px rgba(40,30,10,.06);
+  --radius:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#151210;--card:#1E1A15;--bdr:rgba(184,134,11,.1);
+  --t1:#E8DFD0;--t2:#A89880;--t3:#706252;
+  --accent:#D4A520;--accent-soft:rgba(212,165,32,.07);--accent-mid:rgba(212,165,32,.12);
+  --shadow:0 1px 4px rgba(0,0,0,.2);
+}}
+html{background:var(--bg)}
+body{
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  background:var(--bg);color:var(--t1);
+  min-height:100vh;min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Header ── */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--bdr);
+  padding:14px 16px 12px;
+}
+.header-inner{max-width:720px;margin:0 auto}
+.header h1{
+  font-family:'Shippori Mincho',serif;
+  font-size:20px;font-weight:700;letter-spacing:2px;color:var(--t1);
+  display:flex;align-items:center;gap:8px;
+}
+.header-sub{font-size:11px;color:var(--t3);margin-top:3px;font-weight:400;letter-spacing:.5px}
+
+/* ── Search ── */
+.search-wrap{
+  max-width:720px;margin:0 auto;padding:14px 16px 0;
+}
+.search-box{
+  width:100%;padding:11px 14px 11px 38px;
+  border:1px solid var(--bdr);border-radius:12px;
+  background:var(--card);color:var(--t1);
+  font-size:15px;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.search-box:focus{border-color:var(--accent)}
+.search-box::placeholder{color:var(--t3)}
+.search-icon{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--t3);font-size:16px;pointer-events:none;
+}
+
+/* ── Filters ── */
+.filters{
+  max-width:720px;margin:0 auto;
+  padding:12px 16px;
+  display:flex;gap:7px;overflow-x:auto;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.filters::-webkit-scrollbar{display:none}
+.filter-btn{
+  flex-shrink:0;
+  padding:6px 14px;border-radius:99px;
+  border:1px solid var(--bdr);background:var(--card);
+  font-size:12px;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .2s;
+  font-family:inherit;white-space:nowrap;
+}
+.filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+.filter-btn.active{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+}
+.filter-count{
+  display:inline-block;margin-left:4px;
+  font-size:10px;opacity:.7;
+}
+
+/* ── Stats bar ── */
+.stats-bar{
+  max-width:720px;margin:0 auto;
+  padding:0 16px 8px;
+  font-size:12px;color:var(--t3);
+  display:flex;justify-content:space-between;align-items:center;
+}
+
+/* ── Book list ── */
+.book-list{
+  max-width:720px;margin:0 auto;
+  padding:0 16px 120px;
+}
+.book-card{
+  background:var(--card);
+  border:1px solid var(--bdr);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  margin-bottom:8px;
+  box-shadow:var(--shadow);
+  transition:transform .15s,box-shadow .15s;
+  animation:cardIn .3s ease-out both;
+}
+.book-card:active{transform:scale(.985)}
+@media(hover:hover){
+  .book-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(40,30,10,.08)}
+}
+.book-row{display:flex;gap:12px;align-items:flex-start}
+.book-emoji{
+  width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-soft);border-radius:10px;
+  font-size:22px;flex-shrink:0;
+}
+.book-info{flex:1;min-width:0}
+.book-title{
+  font-family:'Shippori Mincho',serif;
+  font-size:15px;font-weight:700;line-height:1.45;
+  color:var(--t1);margin-bottom:2px;
+}
+.book-author{font-size:12px;color:var(--t2);margin-bottom:5px}
+.book-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0}
+.tag{
+  font-size:10px;padding:2px 8px;border-radius:99px;
+  font-weight:500;
+}
+.tag-cat{background:var(--accent-soft);color:var(--accent)}
+.tag-imp{background:var(--bdr);color:var(--t3)}
+.book-amazon{
+  display:inline-block;font-size:11px;color:var(--accent);
+  text-decoration:none;margin-top:6px;font-weight:500;
+}
+.book-amazon:hover{text-decoration:underline}
+
+/* ── Empty state ── */
+.empty{
+  text-align:center;padding:60px 20px;color:var(--t3);
+}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-text{font-size:14px;line-height:1.7}
+
+/* ── Loading ── */
+.loading{
+  text-align:center;padding:80px 20px;
+}
+.loading-icon{font-size:48px;margin-bottom:16px;animation:pulse 1.5s infinite}
+.loading-text{font-size:14px;color:var(--t2)}
+
+/* ── Scroll to top ── */
+.scroll-top{
+  position:fixed;bottom:24px;right:20px;
+  width:44px;height:44px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  border:none;font-size:18px;cursor:pointer;
+  box-shadow:0 4px 12px rgba(184,134,11,.3);
+  display:none;align-items:center;justify-content:center;
+  transition:opacity .2s,transform .2s;
+  z-index:50;
+}
+.scroll-top.show{display:flex}
+
+/* ── Animations ── */
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>📚 My Kindle 本棚</h1>
+    <div class="header-sub" id="headerSub">読み込み中...</div>
+  </div>
+</div>
+
+<div class="search-wrap" style="position:relative">
+  <span class="search-icon">🔍</span>
+  <input type="text" class="search-box" id="searchInput" placeholder="タイトル・著者名で検索..." disabled>
+</div>
+
+<div class="filters" id="filters"></div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="book-list" id="bookList">
+  <div class="loading">
+    <div class="loading-icon">📚</div>
+    <div class="loading-text">本棚を読み込み中...</div>
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const CAT_EMOJI = {
+  "小説":"📖","人文・思想・歴史":"🏛️","ビジネス・自己啓発":"💼",
+  "科学技術・学問":"🔬","IT・パソコン":"💻","ノンフィクション":"📰",
+  "趣味・実用":"🎯","語学":"🌐"
+};
+const CAT_ORDER = ["小説","人文・思想・歴史","ビジネス・自己啓発","科学技術・学問","IT・パソコン","ノンフィクション","趣味・実用","語学"];
+
+let ALL_BOOKS = [];
+let filteredBooks = [];
+let activeCategory = null;
+let searchQuery = "";
+let displayCount = 50; // Lazy loading: show 50 at a time
+
+// ── Load data ──
+async function init() {
+  try {
+    const res = await fetch("books.json");
+    if (!res.ok) throw new Error("books.json が見つかりません");
+    ALL_BOOKS = await res.json();
+    
+    document.getElementById("headerSub").textContent = ALL_BOOKS.length.toLocaleString() + "冊のライブラリ";
+    document.getElementById("searchInput").disabled = false;
+    
+    buildFilters();
+    applyFilters();
+  } catch (e) {
+    document.getElementById("bookList").innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-text">データの読み込みに失敗しました。<br>${e.message}<br><br>books.json が同じフォルダにあるか確認してください。</div>
+      </div>`;
+  }
+}
+
+// ── Filters ──
+function buildFilters() {
+  const counts = {};
+  for (const b of ALL_BOOKS) {
+    counts[b.category] = (counts[b.category] || 0) + 1;
+  }
+  
+  const wrap = document.getElementById("filters");
+  
+  // "All" button
+  const allBtn = document.createElement("button");
+  allBtn.className = "filter-btn active";
+  allBtn.innerHTML = `すべて<span class="filter-count">${ALL_BOOKS.length}</span>`;
+  allBtn.onclick = () => setCategory(null);
+  allBtn.dataset.cat = "";
+  wrap.appendChild(allBtn);
+  
+  for (const cat of CAT_ORDER) {
+    if (!counts[cat]) continue;
+    const btn = document.createElement("button");
+    btn.className = "filter-btn";
+    btn.innerHTML = `${CAT_EMOJI[cat] || "📚"} ${cat}<span class="filter-count">${counts[cat]}</span>`;
+    btn.onclick = () => setCategory(cat);
+    btn.dataset.cat = cat;
+    wrap.appendChild(btn);
+  }
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  displayCount = 50;
+  
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.cat === (cat || ""));
+  });
+  
+  applyFilters();
+  window.scrollTo({ top: 0 });
+}
+
+// ── Search ──
+const searchInput = document.getElementById("searchInput");
+let searchTimeout;
+searchInput.addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    searchQuery = searchInput.value.trim().toLowerCase();
+    displayCount = 50;
+    applyFilters();
+  }, 200);
+});
+
+// ── Apply filters & render ──
+function applyFilters() {
+  filteredBooks = ALL_BOOKS.filter(b => {
+    if (activeCategory && b.category !== activeCategory) return false;
+    if (searchQuery) {
+      const q = searchQuery;
+      const match = b.title.toLowerCase().includes(q) ||
+                    b.author.toLowerCase().includes(q) ||
+                    b.imprint.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
+  
+  renderBooks();
+}
+
+function renderBooks() {
+  const list = document.getElementById("bookList");
+  const showing = filteredBooks.slice(0, displayCount);
+  
+  // Stats bar
+  const statsBar = document.getElementById("statsBar");
+  if (filteredBooks.length === ALL_BOOKS.length) {
+    statsBar.textContent = "";
+  } else {
+    statsBar.textContent = `${filteredBooks.length}冊を表示中`;
+  }
+  
+  if (filteredBooks.length === 0) {
+    list.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">該当する本が見つかりませんでした。<br>検索条件を変えてお試しください。</div>
+      </div>`;
+    return;
+  }
+  
+  let html = "";
+  for (let i = 0; i < showing.length; i++) {
+    const b = showing[i];
+    const emoji = CAT_EMOJI[b.category] || "📚";
+    const delay = Math.min(i * 0.02, 0.5);
+    const amazonUrl = b.amazon_url || `https://www.amazon.co.jp/s?k=${encodeURIComponent(b.title + " " + b.author)}`;
+    
+    html += `<div class="book-card" style="animation-delay:${delay}s">
+      <div class="book-row">
+        <div class="book-emoji">${emoji}</div>
+        <div class="book-info">
+          <div class="book-title">${esc(b.title)}</div>
+          ${b.author ? `<div class="book-author">${esc(b.author)}</div>` : ""}
+          <div class="book-tags">
+            <span class="tag tag-cat">${esc(b.category)}</span>
+            ${b.imprint ? `<span class="tag tag-imp">${esc(b.imprint)}</span>` : ""}
+          </div>
+          <a href="${esc(amazonUrl)}" target="_blank" rel="noopener" class="book-amazon">Amazonで確認 →</a>
+        </div>
+      </div>
+    </div>`;
+  }
+  
+  if (displayCount < filteredBooks.length) {
+    const remaining = filteredBooks.length - displayCount;
+    html += `<div style="text-align:center;padding:20px 0">
+      <button onclick="loadMore()" style="
+        padding:10px 28px;border-radius:99px;border:1px solid var(--bdr);
+        background:var(--card);color:var(--t2);font-size:13px;font-weight:500;
+        cursor:pointer;font-family:inherit;transition:all .2s;
+      " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+         onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--t2)'">
+        さらに表示（残り${remaining}冊）
+      </button>
+    </div>`;
+  }
+  
+  list.innerHTML = html;
+}
+
+function loadMore() {
+  displayCount += 50;
+  renderBooks();
+}
+
+function esc(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ── Scroll to top button ──
+window.addEventListener("scroll", () => {
+  document.getElementById("scrollTop").classList.toggle("show", window.scrollY > 400);
+});
+
+// ── Init ──
+init();
+</script>
+</body>
+</html>
